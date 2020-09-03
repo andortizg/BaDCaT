@@ -612,10 +612,35 @@ LOADBIN:
         call    CHPUT
 
 
-         ; **************** PUT RAM IN PAGE 1 TO COPY DATA **************
-        ld      a,10001011b     ; Select secondary SLOT 3 (RAM)
-        ld      h,01000000b     ; Page number 1
-        call    ENASLT
+;*************************************************************************
+; *** This routine selects the same slot in page 1 that you have in page 3, 
+; *** which will always be the system RAM
+; *** From http://map.tni.nl/sources/raminpage1.php
+;*************************************************************************
+
+Enable_RAM2: ld     a,(EXPTBL+3)
+             ld     b,a                 ;check if slot is expanded
+             and    a
+             jp     z,Ena_RAM2_jp
+             ld     a,(#FFFF)           ;if so, read subslot value first
+             cpl                        ;complement value
+             and    %11000000
+             rrca                       ;shift subslot bits to bits 2-3
+             rrca
+             rrca
+             rrca
+             or     b
+             ld     b,a
+Ena_RAM2_jp: in     a,(#A8)             ;read slot value
+             and    %11000000           ;shift slot bits to bits 0-1
+             rlca
+             rlca
+             or     b
+             ld     h,#40               ;select slot
+             call   ENASLT
+;***************************************************************************
+        
+        
         ; Start TX
         ld      a,'>'
         call    rs_out
@@ -652,12 +677,16 @@ ROMexec:
         ld      l,(ix+2)
         jp      hl
 
+
+        
 ;************************************************************************
 ; ****** Store bytes received from UART into RAM ****** *****************
 ; Input: DE-> Initial RAM address, HL -> Number of bytes to store 
 ; Execute with JP !
 ;************************************************************************
 RX2MEM:
+        ld      a,0
+        out     (baseport+1),a  ; Disable UART interrupts to speed up the proccess
         ; Receive bytes and store in RAM, initial address DE
         ld      (AUX),de
         ld      ix,(AUX)
