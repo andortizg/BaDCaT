@@ -1,0 +1,40 @@
+; *****************************************************************************
+; * BDSHELL (BIN VERSION)                                                     *
+; * (C) ANDRES ORTIZ / ARMANDO PEREZ                                          *
+; *****************************************************************************
+
+
+; --- HARD AND CONSTANTS        -----------------------------------------
+
+
+                INCLUDE HARD.Z8A
+                INCLUDE CONST.Z8A
+
+
+; --- FLAGS                     -----------------------------------------
+
+
+PTYPE           EQU     TBIN    ; TYPE BINARY
+
+
+; --- BIN HEADER                -----------------------------------------
+
+
+                ORG     BINORG - 7
+                DEFB    #FE
+                DEFW    INIT
+                DEFW    END - 1
+                DEFW    START
+
+
+; --- PROGRAM                    -----------------------------------------
+
+INIT
+                ; PROGRAM
+
+                INCLUDE PROGRAM.Z8A
+END
+                ; VARS
+                
+                INCLUDE GVARS.Z8A
+

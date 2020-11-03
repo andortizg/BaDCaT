@@ -1,0 +1,64 @@
+;                               *****************************************
+;                               * KEY/JOY                               *
+;                               *****************************************
+
+; --- KEY INIT                  ----------------------------------------
+
+; - KEYINIT ------------
+; - INIT KEYBOARD SYSTEM
+; - 
+
+
+KEYINIT         LD      HL,#FFFF
+                LD      (KEYDOW),HL
+                RET
+
+               
+; --- KEY READ                 ----------------------------------------
+
+
+
+; - KEYREAD -----------
+; - READ KEYBOARD
+; - 
+; -     BITS:
+; -             B7 ->
+; -             B6 -> 
+; -             B5 -> F1
+; -             B4 ->
+; -             B3 ->
+; -             B2 ->
+; -             B1 -> F5
+; -             B0 ->
+
+KEYREAD         IN      A,(#AA)
+                AND     #F0
+                LD      B,A
+                OR      6
+                OUT     (#AA),A
+                IN      A,(#A9)
+                AND     %00100000
+                LD      C,A
+
+                LD      A,B
+                OR      7
+                OUT     (#AA),A
+                IN      A,(#A9)
+                AND     %00000010 
+                OR      C
+                LD      C,A
+
+                
+                ; KEY TRG OPERATION
+        
+                LD      HL,KEYDOW
+                LD      A,(HL)
+                LD      (HL),C
+                XOR     C
+                CPL
+                OR      C
+                LD      (KEYTRG),A
+
+                RET 
+
+

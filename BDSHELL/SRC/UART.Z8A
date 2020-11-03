@@ -1,0 +1,232 @@
+;                               *****************************************
+;                               * UART                                  *
+;                               *****************************************
+
+
+; --- INIT  / DEINIT            -----------------------------------------
+
+
+; - UARTINIT -----------
+; - INIT UART/BADCAT RELATED
+; -
+
+UARTINIT        DI 
+                XOR     A
+                OUT     (BPORT + 1),A   ; DISABLE INTERRUPTS
+                OUT     (BPORT + 4),A   ; RST = 0 TO AVOID RECEIVING BYTES
+
+                ; UNSET RTS
+                ; ENABLE FIFO
+
+                LD      A,#87
+                OUT     (BPORT + 2),A      
+
+                ; SET SPEED
+
+                LD      A,#80           ; SET-UP ACCESS TO BAUD DIVISOR LATCH (DLAB FLAG)
+                OUT     (BPORT + 3),A   ; WRITING 0X80 (BIT 7 SET) TO THE LCR (0X83) REGISTER
+                LD      A,#02           ; PROGRAM DLL (LOW BYTE)
+                OUT     (BPORT),A       ; DLL=01, DLM=0 -> 57K6 BAUDS BY DEFAULT
+                XOR     A
+                OUT     (BPORT + 1),A   
+
+                ; SET PROTOCOL
+
+                LD      A,#03           ; 8, N, 1 WRITTING 0X03  00000011B
+                OUT     (BPORT + 3),A   ; TO  LCR (0X83) REGISTER. THIS RESET THE DLAB FLAG
+
+                RET 
+
+
+; - UARTDINI -----------
+; - UART DEACTIVATE
+; - 
+
+UARTDINI        DI 
+                LD      A,%00000111
+                OUT     (BPORT + 3),A
+                XOR     A
+                OUT     (BPORT + 4),A
+                OUT     (BPORT + 1),A
+                RET
+                
+
+
+; --- BUFFER                    -----------------------------------------
+
+
+; - WAITEBUF -----------
+; - WAIT UNTIL BUFFER IS EMPTY
+; - 
+
+WAITEBUF        IN      A,(BPORT + 5)
+                AND     1
+                JR      Z,.END 
+                IN      A,(BPORT)
+                JR      WAITEBUF
+.END            IN      A,(BPORT + 2)
+
+
+; - FLUSHBUF -----------
+; - FLUSH RX BUFFER
+; - 
+
+FLUSHBUF        XOR     A
+                LD      (RPTR),A
+                LD      (WPTR),A
+                LD      HL,RXBUFF
+                LD      DE,RXBUFF + 1
+                LD      BC,BUFFSIZE - 1
+                LD      (HL),0
+                LDIR
+                RET
+
+
+; - CHINBUF ------------
+; - RETURN NUMBER OF UNREADED
+; - BYTES IN BUFFER IN A
+; - Z = 1 EMPTY BUFFER
+; - WPTR IS ALWAYS > RPTR
+; - 
+
+CHINBUF         LD      A,(RPTR)
+                LD      C,A
+                LD      A,(WPTR)
+                SUB     C
+                RET
+
+
+; --- READ / WRITE              -----------------------------------------
+
+
+; - RSIN ---------------
+; - RECEIVE ONE BYTE
+; - FROM RING BUFFER
+; - A: BYTE RECEIVED
+; - Z: NO BYTES LEFT
+; - 
+
+
+RSIN            LD      A,(WPTR)
+                LD      C,A
+                LD      A,(RPTR)
+                CP      C
+                RET     Z                       ; WPTR == RPTR NO BYTES LEFT
+
+                ; C BYTES TO RECEIVE
+                ; A, RPTR
+
+                LD      D,0
+                LD      E,A
+                INC     A
+                LD      (RPTR),A
+                LD      HL,RXBUFF
+                ADD     HL,DE
+                LD      A,(HL)
+                RET
+
+
+; - RSINBUF  ----------
+; - PREPARE FOR READ 
+; - CONSECUTIVE IN BYTES
+; - OUTPUT:
+; - A: BYTES TO READ
+; - HL: POINTER TO NEXT BYTE TO READ
+; - Zy = 1 BUFFER EMPTY
+; - WPTR = RPTR
+; 
+
+RSINBUF         DI 
+                LD      A,(RPTR)
+                LD      L,A
+                LD      A,(WPTR)
+                EI
+                LD      (RPTR),A
+                SUB     L
+                LD      H,RXBUFF >> 8 
+                RET
+
+
+
+
+; - RSOUT -------------
+; - PUT BYTE IN THE TX FIFO
+; - A: BYTE TO BE SENT
+; - 
+
+RSOUT           PUSH    AF
+.WAIT           IN      A,(BPORT + 5)
+                AND     32
+                JP      Z,.WAIT
+                POP     AF
+                OUT     (BPORT),A
+                RET
+
+
+
+; --- INTERRUPT                 -----------------------------------------
+
+
+; - UARTINT ------------
+; - UART INTERRUPT
+; - 
+
+UARTINT 
+
+                ; CHECK UART IIR REGISTER
+
+                IN      A,(BPORT + 2)
+                AND     1                       ; 11000100 (RECEIVED DATA INTERRUPT, FIFO TRIGGER)
+                RET     NZ
+
+
+                ; UNSET RTS
+
+                XOR     A
+                OUT     (BPORT + 4),A
+
+                ; UART INTERRUPT, RX DATA AVAILABLE. 
+        
+                ; FILL THE BUFFER UNTIL IT IS FULL OR THERE IS NOT MORE DATA
+                ; RING BUFFER IS IMPLEMENTED. 
+
+                LD      H,RXBUFF >> 8
+                LD      A,(WPTR)
+                LD      L,A
+
+.LOOP           IN      A,(BPORT + 5)
+                AND     1
+                JP      Z,.END
+
+
+                IN      A,(BPORT)               ; GET BYTE!
+                LD      (HL),A
+                INC     L
+                JP      .LOOP
+
+.END            LD      A,L
+                LD      (WPTR),A
+                RET
+
+; --- COMMANDS                  -----------------------------------------
+
+
+; - SENDCMD --------------
+; - SEND COMMAND
+; - HL: POINTER TO COMMAND
+; - 
+
+SENDCMD         LD      A,(HL)
+                AND     A
+                JP      Z,.END
+                INC     HL
+                CALL    RSOUT
+                JP      SENDCMD
+.END            LD      B,80
+                EI
+.WAIT           HALT
+                DJNZ    .WAIT
+                RET
+                
+                
+

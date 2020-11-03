@@ -1,0 +1,55 @@
+;                               *****************************************
+;                               * CONSTANTS                             *
+;                               *****************************************
+
+
+
+; --- PROGRAM ASSEMBLE OPTS.    -----------------------------------------
+
+
+ROMDSK          EQU     0       ; 0 DISABLE ROM DISK SUPPORT
+ECHOON          EQU     1       ; 0 DISABLE LOCAL ECHO
+SENDIC          EQU     1       ; 0 DISABLE INIT CMDS (ATE AND ATZ)
+
+
+; --- PROGRAM CONSTANS          -----------------------------------------
+
+
+BINORG          EQU     #C300
+RROMORG         EQU     #C000
+REXEORG         EQU     #FA00
+
+
+; --- TYPE CONSTANTS            -----------------------------------------
+
+
+TROM            EQU     0
+TBIN            EQU     1
+TCOM            EQU     2
+TCAS            EQU     3
+
+
+; - RAM TYPE CONSTANTS          -----------------------------------------
+
+
+RAM8K           EQU  0
+RAM16K          EQU  1
+RAM32K          EQU  2
+RAM48K          EQU  3
+RAM64K          EQU  4
+
+
+; - UART                        -----------------------------------------
+
+
+BUFFSIZE        EQU     #100
+
+
+; - FLAGS & STATUS               ----------------------------------------
+
+STAREAD         EQU     0
+STAWRT          EQU     1
+
+STAREADM        EQU     1
+STAWRTM         EQU     2
+

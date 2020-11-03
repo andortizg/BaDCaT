@@ -1,0 +1,270 @@
+;                               *****************************************
+;                               * HARD                                  *
+;                               *****************************************
+
+
+; --- SOUND                     -----------------------------------------
+
+
+OPLLCTRL        EQU     #7C
+OPLLDATA        EQU     #7D
+PSGCTRL         EQU     #A0
+PSGWRITE        EQU     #A1
+PSGREAD         EQU     #A2
+
+
+; --- MEM                       -----------------------------------------
+
+
+PGMRAM          EQU     #E000
+PGMRAMS         EQU     #1380
+
+
+; --- BIOS                      ------------------------------------------
+
+                                                 
+ENASCR_B        EQU     #44             
+DISSCR_B        EQU     #41             
+WRTVDP_B        EQU     #47             
+WRTVRM          EQU     #4D             
+FILVRM_B        EQU     #56             
+LDIRVM_B        EQU     #5C             
+LDIRMV_B        EQU     #59             
+CHGMOD          EQU     #5F             
+WRTPSG          EQU     #93             
+RDPSG           EQU     #96             
+GTSTCK          EQU     #D5             
+GTTRIG          EQU     #D8             
+SNSMAT          EQU     #141            
+ENASLT          EQU     #24             
+RSLREG          EQU     #138            
+RDSLT           EQU     #0C
+WRSLT           EQU     #14
+CHPUT           EQU     #A2
+CALSLT          EQU     #1C
+DCOMPR_B        EQU     #20
+KILBUF          EQU     #156                                              
+CHSNS           EQU     #9C
+CHGET           EQU     #9F
+EXTBIOS         EQU     #15F
+SUBROM          EQU     #15C
+CLS             EQU     #00C3
+EXTROM          EQU     #015F
+RDVDP           EQU     #013E
+CHGCPU          EQU     #180
+ERAFNK          EQU     #CC
+DSPFNK          EQU     #CF
+BREAKX          EQU     #B7
+
+
+; --- SYSTEM VARS               ------------------------------------------
+
+
+HTIMI           EQU     #FD9F           
+HKEYI           EQU     #FD9A           
+CLIKSW          EQU     #F3DB           
+FORCLR          EQU     #F3E9           
+BAKCLR          EQU     #F3EA           
+BDRCLR          EQU     #F3EB           
+SCRMOD          EQU     #FCAF           
+RG0SAV          EQU     #F3DF           
+RG1SAV          EQU     RG0SAV + 1
+RG3SAV          EQU     RG0SAV + 3
+RG4SAV          EQU     RG0SAV + 4
+RG6SAV          EQU     RG0SAV + 6
+RG7SAV          EQU     RG0SAV + 7      
+EXPTBL          EQU     #FCC1           
+SLTTBL          EQU     #FCC5           
+LINL40          EQU     #F3AE
+LINL32          EQU     #F3AF
+EXTVDP          EQU     #FFE7           
+CSRY            EQU     #F3DC
+CSRX            EQU     #F3DD
+EXBRSA          EQU     #FAF8
+RAMAD0          EQU     #F341
+RAMAD1          EQU     #F342
+RAMAD2          EQU     #F343
+RAMAD3          EQU     #F344
+CNSDFG          EQU     #F3DE
+FNKSTR          EQU     #F87F
+REPCNT          EQU     #F3F7
+
+CMASK           EQU     #F92C
+CSRSW           EQU     #FCA9
+
+HSTKE           EQU     #FEDA
+HRUNC           EQU     #FECB
+HPHYD           EQU     #FFA7
+
+
+JIFFY           EQU     #FC9E
+STATFL          EQU     #F3E7 
+
+RG10SA          EQU     #FFE9                                
+RG18SA          EQU     #FFF1
+RG19SA          EQU     #FFF2
+RG23SA          EQU     #FFF6
+
+RG25SA          EQU     #FFFA
+RG26SA          EQU     #FFFB
+RG27SA          EQU     #FFFC
+
+; --- KEY / JOY                 -----------------------------------------
+
+
+; -        B7 -> RIGHT
+; -        B6 -> DOWN
+; -        B5 -> UP
+; -        B4 -> LEFT
+; -        B3 -> EMPTY
+; -        B2 -> PAUSE 
+; -        B1 -> BUTTON 2
+; -        B0 -> BUTTON 1
+
+
+JOYDIRR         EQU      7                                                
+JOYDIRD         EQU      6                                                
+JOYDIRU         EQU      5                                                
+JOYDIRL         EQU      4                                                
+JOYPAUS         EQU      2                                                
+JOYTRG2         EQU      1                                                
+JOYTRG1         EQU      0                                                
+
+JOYDIRRM        EQU     128                                              
+JOYDIRDM        EQU     64                                               
+JOYDIRUM        EQU     32                                               
+JOYDIRLM        EQU     16                                               
+JOYPAUSM        EQU     4                                                
+JOYTRG2M        EQU     2                                                
+JOYTRG1M        EQU     1                                                
+
+JOYTRGAM        EQU     JOYTRG1M | JOYTRG2M                              
+JOYDIRAM        EQU     JOYDIRUM | JOYDIRDM | JOYDIRLM | JOYDIRRM
+
+
+; --- SR0 BASE ADDRESS          ----------------------------------------------
+
+SCR0PAT         EQU     #0800           ; PATTERN GENERATOR TABLE
+SCR0ATT         EQU     #0000           ; PATTERN NAME TABLE
+
+SCR02PAT        EQU     #1000           ; PATTERN GENERATOR TABLE
+SCR02ATT        EQU     #0000           ; PATTERN NAME TABLE
+
+
+; --- SR2 BASE ADDRESS          ----------------------------------------------
+
+
+SCR2PAT         EQU     #0000           ; PATTERN GENERATOR TABLE
+SCR2COL         EQU     #2000           ; PATTERN COLOR TABLE
+SCR2ATT         EQU     #1800           ; PATTERN NAME TABLE
+SPR2PAT         EQU     #3800           ; SPRITE GENERATOR TABLE
+SPR2ATT         EQU     #1B00           ; SPRITE NAME TABLE
+SPRATTS         EQU     #80
+
+
+; --- SR1 BASE ADDRESS          ----------------------------------------------
+
+
+SCR1PAT         EQU     #0000           ; PATTERN GENERATOR TABLE
+SCR1ATT         EQU     #1800           ; PATTERN NAME TABLE
+SCR1COL         EQU     #2000           ; PATTERN COLOR TABLE
+SPR1PAT         EQU     #3800           ; SPRITE GENERATOR TABLE
+SPR1ATT         EQU     #1B00           ; SPRITE NAME TABLE
+
+
+; --- SR4 BASE ADDRESS          ----------------------------------------------
+
+
+SCR4PAT         EQU     #0000           ; PATTERN GENERATOR TABLE
+SCR4COL         EQU     #2000           ; PATTERN COLOR TABLE
+SCR4ATT         EQU     #1800           ; PATTERN NAME TABLE
+SPR4PAT         EQU     #3800           ; SPRITE GENERATOR TABLE
+SPR4ATT         EQU     #1E00           ; SPRITE NAME TABLE
+SPR4COL         EQU     #1C00           ; SPRIT COLOR TABLE
+
+
+
+; --- SR5 BASE ADDRESS          ----------------------------------------------
+
+
+SCR5PAT         EQU     #0000           ; PATTERN GENERATOR TABLE
+SPR5PAT         EQU     #7800           ; SPRITE GENERATOR TABLE
+SPR5ATT         EQU     #7600           ; SPRITE NAME TABLE
+SPR5COL         EQU     #7400           ; SPRITE COLOR TABLE
+
+
+; --- VDP COMMANDS              ----------------------------------------------
+
+
+; - COMMANDS
+
+VDPCHMMM        EQU     #D0             
+VDPCLMMM        EQU     #98             
+
+; - VDP COMMAND OFFSETS
+
+VDPOFFSX        EQU     0                                 
+VDPOFFSY        EQU     2
+VDPOFFDX        EQU     4
+VDPOFFDY        EQU     6
+VDPOFFNX        EQU     8
+VDPOFFNY        EQU     10
+VDPOFFNU        EQU     12
+VDPOFFDI        EQU     13
+VDPOFFCM        EQU     14
+
+
+; --- SPRITE                    ----------------------------------------------
+
+
+SPROFF          EQU     #D1
+
+
+
+; --- AMD 29F040               ----------------------------------------------
+
+
+                ; COMMAND SEQUENCE
+
+FLHCMD1         EQU     #AA
+FLHCMD2         EQU     #55
+FLHADDR1        EQU     #4555
+FLHADDR2        EQU     #5AAA
+FLHCMD3E        EQU     #80
+
+                ; COMMANDS
+
+FLHCMDRS        EQU     #F0
+FLHCMDSE        EQU     #30
+FLHCMDCE        EQU     #10
+FLHCMDWR        EQU     #A0
+FLHCMDAS        EQU     #90
+
+                ; DEVICE ID
+
+FLHDEVID        EQU     #A4
+
+
+; --- SRAM                      ----------------------------------------------
+
+                ; PAC
+
+SRAMPACA        EQU     #5FF0
+
+                ; PANASONIC SRAM
+
+SRAMSRAA        EQU     #5FF0
+
+SRAMPASL        EQU     %10001111
+SRAMPAPA        EQU     #80
+SRAMPAMA        EQU     #6800
+
+
+
+
+; --- BADCAT RS232              ----------------------------------------------
+
+
+BPORT           EQU     #80
+
+BCSCRA          EQU     #87

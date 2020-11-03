@@ -1,0 +1,71 @@
+;                               *****************************************
+;                               * PROGRAM VARS                          *
+;                               *****************************************
+
+
+; --- RAM MSX1                  -----------------------------------------
+
+
+INITVARS        
+
+                ALIGN   256
+                
+                ; UART (256 ALIGNED BUFFER)
+
+RXBUFF          DEFS    BUFFSIZE, 0     ; RING BUFFER
+RPTR            DEFB    0               ; WRITE POINTER RING BUFFER
+WPTR            DEFB    0               ; READ POINTER RING BUFFER
+AUX             DEFB    0
+
+
+                ; SLOT 
+
+THISSLT         DEFB    0
+SLOTVAR         DEFB    0
+
+                ; RAM 
+
+RAMTYPUS        DEFB    0
+RAMPAGE0        DEFB    0
+RAMPAGE1        DEFB    0
+RAMPAGE2        DEFB    0
+RAMPAGE3        DEFB    0
+                
+                ; TMP
+
+RAMCHK0         DEFB    0
+RAMCHK1         DEFB    0
+RAMCHK2         DEFB    0
+RAMCHK3         DEFB    0
+SAVESP          DEFW    0
+FNKBUF          DEFS    10
+CNSDFGT         DEFB    0
+STRNUM          DEFS    7
+
+                ; SYSTEM
+
+SYSTEM          DEFB    0
+FREQSET         DEFB    0
+BADCAT          DEFB    0
+
+                ; INTERRUPT 
+
+OLDHKEY         DEFS    5
+OLDHTIM         DEFS    5
+INTCNT          DEFB    0
+
+                ; KEYBOARD
+
+KEYDOW          DEFB    0
+KEYTRG          DEFB    0
+
+
+                ; MAIN 
+
+MSTAT           DEFB    0
+
+
+
+
+ENDVARS 
+

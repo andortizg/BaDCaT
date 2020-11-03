@@ -1,0 +1,62 @@
+;                               *****************************************
+;                               * ISR INTERRUPT                         *
+;                               *****************************************
+
+
+; --- INIT / CONTROL            -----------------------------------------
+
+
+; - INTINIT ------------
+; - INIT ISR
+; - 
+
+INTINIT         DI
+                LD      HL,HKEYI
+                LD      DE,OLDHKEY
+                LD      BC,5
+                LDIR
+
+                LD      A,#C3
+                LD      (HKEYI),A
+                LD      HL,HKEYHAND
+                LD      (HKEYI + 1),HL
+
+                LD      HL,HTIMI
+                LD      DE,OLDHTIM
+                LD      BC,5
+                LDIR
+
+                LD      A,#C3
+                LD      (HTIMI),A
+                LD      HL,HTIMHAND
+                LD      (HTIMI + 1),HL
+
+                RET
+                
+
+; --- INTERRUPT                 -----------------------------------------
+
+
+; - HKEYHAND ------------
+; - KEY INTERRUPT HANDLER
+; -
+
+HKEYHAND        CALL    UARTINT 
+                JP      OLDHKEY
+
+; - HTIMHAND ----------
+; - IM1 INTERRUPT HANDLER
+; - 
+
+HTIMHAND        CALL    KEYREAD
+
+
+                CALL    OLDHTIM
+                LD      A,(INTCNT)
+                INC     A
+                LD      (INTCNT),A
+
+                RET
+
+
+

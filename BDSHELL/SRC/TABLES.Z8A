@@ -1,0 +1,96 @@
+;                               *****************************************
+;                               * TABLES / RESOURCES                    *
+;                               *****************************************
+
+
+
+
+; --- COMMANDS                  -----------------------------------------
+
+
+CMDATE1         DEFM    "ATE1", #0D, 0
+CMDATE0         DEFM    "ATE0", #0D, 0
+CMDATZ          DEFM    "ATZ", #0D, 0
+CMDATH          DEFM    "ATH", #0D, 0
+CMDCLOSE        DEFM    "+++", 0
+
+; --- TEXT                      -----------------------------------------
+
+
+
+TXTINTR         DEFB    #0D, #0A, 0
+TXTLOGO         DEFM    "BaDCaT Shell Terminal v1.0"
+                DEFB    #0D, #0A
+                DEFM    "(c) 2020 by Armando Perez"
+                DEFB    #0D, #0A
+                DEFB    #0D, #0A
+                DEFM    "Based on the original work of:"
+                DEFB    #0D, #0A
+                DEFM    "Andres Ortiz & Oduvaldo Pavan Junior" 
+                DEFB    #0D, #0A
+                DEFB    #0D, #0A, 0
+
+TXTMODEL        DEFM    " - System: ",0
+TXTMSX1         DEFM    "MSX", #0D, #0A, 0
+TXTMSX2         DEFM    "MSX2", #0D, #0A, 0
+TXTMSX2P        DEFM    "MSX2+", #0D, #0A, 0
+TXTMSXTR        DEFM    "MSX Turbo R", #0D, #0A, 0
+
+TXTRT8K         DEFM    " - Ram: 8k", #0D, #0A,0
+TXTRT16K        DEFM    " - Ram: 16k", #0D, #0A,0
+TXTRT32K        DEFM    " - Ram: 32k", #0D, #0A,0
+TXTRT48K        DEFM    " - Ram: 48k", #0D, #0A,0
+TXTRT64K        DEFM    " - Ram: 64k or higher", #0D, #0A,0
+
+TXTDISK         DEFM    " - Disk System: ",0
+TXTENA          DEFM    "Enabled"
+                DEFB    #0D, #0A, 0
+TXTDIS          DEFM    "Disabled"
+                DEFB    #0D, #0A, 0
+
+TXTBCP          DEFM    " - BaDCat: ",0
+TXTFOUN         DEFM    "Found"
+                DEFB    #0D, #0A, 0
+TXTNFOUN        DEFM    "Not Found"
+                DEFB    #0D, #0A, 0
+
+TXTIINT         DEFM    " - Initializing interrupt"
+                DEFB    #0D, #0A, 0
+
+TXTIUAR         DEFM    " - Initializing UART"
+                DEFB    #0D, #0A, 0
+
+TXTREADY        DEFM    "Ready"
+                DEFB    #0D, #0A, 0
+
+TXTBYE          DEFB    #0D, #0A
+                DEFM    "Bye ^^"
+                DEFB    #0D, #0A, 0
+                
+TXTCLOSE        DEFB    #0D, #0A
+                DEFM    "Closing connection..."
+                DEFB    #0D, #0A, 0
+
+
+TXTDOWN         DEFB    #0D, #0A
+                DEFM    "Get file info...",0
+                DEFB    #0D, #0A, 0
+
+TXTTOUT         DEFB    #0D, #0A
+                DEFM    "BaDCat did not respond!"
+                DEFB    #0D, #0A, 0
+
+TXTLOAD         DEFB    #0D, #0A
+                DEFM    "Loading: ",0
+TXTBYTE         DEFM    " bytes"
+                DEFB    #0D, #0A, 0
+
+
+TXTMAX48        DEFB    #0D, #0A
+                DEFM    "Error: Max size file 48k"
+                DEFB    #0D, #0A, 0
+
+TXTNEMEM        DEFB    #0D, #0A
+                DEFM    "Error: Not enough memory"
+                DEFB    #0D, #0A, 0
+

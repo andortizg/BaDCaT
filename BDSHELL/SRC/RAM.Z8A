@@ -1,0 +1,245 @@
+;                               *****************************************
+;                               * RAM  (SPECIAL PAGE 3)                 *
+;                               *****************************************
+
+
+; - RAM ROUTINES                -----------------------------------------
+
+
+TMPSLTP0        EQU     #8000
+
+; - SEARRAM -------------
+; - SEARCH RAM (ALL PAGES)
+; -
+
+
+SEARRAM         LD      A,RAM8K
+                LD      (RAMTYPUS),A
+                LD      A,(EXPTBL)
+                LD      (RAMPAGE0),A
+                LD      (RAMPAGE1),A
+                LD      (RAMPAGE2),A
+                LD      (RAMPAGE3),A
+                XOR     A
+                LD      (RAMCHK0),A
+                LD      (RAMCHK1),A
+                LD      (RAMCHK2),A
+                LD      (RAMCHK3),A
+
+                CALL    GETSLTP3
+                LD      (RAMPAGE3),A
+
+                LD      C,#C0
+                CALL    CHKMEMDI
+                JR      C,.END
+                LD      A,RAM16K
+                LD      (RAMTYPUS),A
+
+
+                ; PAGE 1
+
+.SLOT40         LD      C,#40
+                CALL    CHKMEM
+                JR      C,.SLOT80
+                LD      (RAMPAGE1),A
+                LD      A,1
+                LD      (RAMCHK1),A
+
+
+                ; PAGE 2
+
+.SLOT80         LD      C,#80
+                CALL    CHKMEM
+                JR      C,.END
+                LD      (RAMPAGE2),A
+                LD      A,1
+                LD      (RAMCHK2),A
+
+
+                ; SPECIAL SLOT 0
+
+                LD      A,(RAMPAGE2)
+                LD      H,#80
+                CALL    ENASLT
+                LD      HL,SETSLTP0
+                LD      DE,TMPSLTP0
+                LD      BC,SETSLTP0.END - SETSLTP0
+                LDIR
+
+                ; PAGE 0
+
+.SLOT00         LD      C,#00
+                CALL    CHKMEM
+                JR      C,.END
+                LD      (RAMPAGE0),A
+                LD      A,1
+                LD      (RAMCHK0),A
+
+                ; - END
+
+.END            LD      A,(RAMTYPUS)
+                CP      RAM8K
+                RET     Z
+                LD      A,(RAMCHK2)
+                OR      A
+                RET     Z
+                LD      A,RAM32K
+                LD      (RAMTYPUS),A
+                LD      A,(RAMCHK1)
+                OR      A
+                RET     Z
+                LD      A,RAM48K
+                LD      (RAMTYPUS),A
+                LD      A,(RAMCHK0)
+                OR      A
+                RET     Z
+                LD      A,RAM64K
+                LD      (RAMTYPUS),A
+                RET
+
+
+
+; - CHK ROUTINES                -----------------------------------------
+
+
+
+         
+; - CHKMEM ------------- 
+; - CHECK MEM IN ALL SLOTS OF PAGE      
+; - C: PAGE                            
+; - RETURNS:                          
+; - CY NOT FOUND                     
+; -
+
+CHKMEM   
+                LD      A,#FF
+                LD      (THISSLT),A
+.LOOP           PUSH    BC
+                CALL    SIGSLOT
+                POP     BC
+                CP      #FF
+                JR      NZ,.CHK
+                SCF
+                RET
+.CHK     
+                PUSH    BC
+                CALL    CHKMEMS0
+                POP     BC
+                LD      A,(THISSLT)
+                RET     NC
+                JR      .LOOP
+
+
+; - CHKMEMS0 -----------                            
+; - CHECK MEM IN PAGE                    
+; - C: PAGE                              
+; - A: SLOT (FXXXSSPP                    
+; - RETURNS:                             
+; - CY = 1 NOT FOUND                     
+; - IF SLOT 0 USES SPECIAL CHECK MEM     
+; -
+
+CHKMEMS0        LD      B,A
+                LD      A,C
+                OR      A
+                LD      A,B
+                JP      Z,CHKMEMG0
+
+
+; - CHKMEMGE -----------                          
+; - CHECK MEM IN PAGE                  
+; - C: PAGE                            
+; - A: SLOT (FXXXSSPP)                  
+; - RETURNS:                           
+; - CY = 1 NOT FOUND                   
+; -
+
+CHKMEMGE        PUSH    BC
+                PUSH    HL
+                LD      H,C
+                LD      L,#10
+.LOOP           PUSH    AF
+                CALL    RDSLT
+                CPL 
+                LD      E,A
+                POP     AF
+                PUSH    DE
+                PUSH    AF
+                CALL    WRSLT
+                POP     AF
+                POP     DE
+                PUSH    AF
+                PUSH    DE
+                CALL    RDSLT
+                POP     BC
+                LD      B,A
+                LD      A,C
+                CPL 
+                LD      E,A
+                POP     AF
+                PUSH    AF
+                PUSH    BC
+                CALL    WRSLT
+                POP     BC
+                LD      A,C
+                CP      B
+                JR      NZ,.END
+                POP     AF
+                DEC     L
+                JR      NZ,.LOOP
+                POP     HL
+                POP     BC
+                OR      A
+                RET
+.END            POP     AF
+                POP     HL
+                POP     BC
+                SCF
+                RET
+
+
+; - SPECIAL PAGE 0              -----------------------------------------
+
+
+; - CHKMEMG0 -----------                            
+; - CHECK MEM IN PAGE 0                 
+; - A: SLOT (FXXXSSPP)                 
+; - CY = 1 NOT FOUND                  
+; -
+
+CHKMEMG0        CALL    TMPSLTP0
+                LD      C,#00
+                CALL    CHKMEMDI
+                PUSH    AF
+                LD      A,(EXPTBL)
+                CALL    TMPSLTP0
+                POP     AF
+                RET
+                
+
+; - CHKMEMDI ---------
+; - CHECK MEM IN PAGE C
+; 
+
+CHKMEMDI        LD      H,C
+                LD      L,#10
+.LOOP           LD      A,(HL)
+                CPL  
+                LD      C,A
+                LD      (HL),A
+                LD      A,(HL)
+                LD      B,A
+                CPL
+                LD      (HL),A
+                LD      A,B
+                CP      C
+                JR      NZ,.NO
+                DEC     L
+                JR      NZ,.LOOP
+                OR      A
+                RET
+.NO             SCF
+                RET
+
+
+
