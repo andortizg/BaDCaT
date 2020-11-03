@@ -1,9 +1,7 @@
 BDShell BadCat Terminal v1.0 
 (c) 2020 Armando Perez
 
-Based on previous work of:
-    Andres Ortiz
-    Oduvaldo Pavan Junior
+Based on previous work of: Andres Ortiz & Oduvaldo Pavan Junior
     
     
     --- CONTENTS ----
