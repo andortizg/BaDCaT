@@ -1,0 +1,249 @@
+;                               *****************************************       
+;                               * SLOT ROUTINES                         *
+;                               *****************************************
+
+
+
+; - SIGSLOT -------------
+; - RETURNS IN A THE NEXT SLOT
+; - INIT THISSLT HAS TO BE #FF. 
+; - IF NO MORE SLOTS, IT RETURNS A=#FF. 
+; -
+
+SIGSLOT         LD      A,(THISSLT) 
+                CP      #FF
+                JR      NZ,.SIGSLT
+                LD      A,(EXPTBL)
+                AND     %10000000
+                LD      (THISSLT),A
+                RET
+.SIGSLT         LD      A,(THISSLT)
+                CP      %10001111
+                JR      Z,.NOMASLT
+                CP      %00000011
+                JR      Z,.NOMASLT
+                BIT     7,A
+                JR      NZ,.SLTEXP
+.SLTSIMP        AND     %00000011
+                INC     A
+                LD      C,A
+                LD      B,0
+                LD      HL,EXPTBL
+                ADD     HL,BC
+                LD      A,(HL)
+                AND     %10000000
+                OR      C
+                LD      (THISSLT),A
+                RET
+.SLTEXP         LD      C,A
+                AND     %00001100
+                CP      %00001100
+                LD      A,C
+                JR      Z,.SLTSIMP
+                ADD     A,%00000100
+                LD      (THISSLT),A
+                RET
+.NOMASLT        LD      A,#FF
+                RET
+.END
+
+
+
+
+
+; - SEARSLOT ------------                         
+; - SEARCH ROM SLOT               
+; - ROM IN PAGE 1 (#4000 - #7FFF)
+
+SEARSLOT        CALL    RSLREG
+                RRCA    
+                RRCA
+                AND     3
+                LD      C,A
+                LD      B,0
+                LD      HL,EXPTBL
+                ADD     HL,BC
+                LD      A,(HL)
+                AND     A
+                JP      P,.NOEXP
+                OR      C
+                LD      C,A
+                INC     HL
+                INC     HL
+                INC     HL
+                INC     HL
+                LD      A,(HL)
+                AND     %00001100
+.NOEXP          OR      C
+                LD      H,#80
+                RET
+
+
+; - SETSLOT ------------
+; - SEARCH AND SET SLOT
+; - OUTPUT:
+; - A SLOT
+
+SETSLOT         CALL    SEARSLOT
+                PUSH    AF
+                CALL    ENASLT
+                POP     AF
+                RET
+
+
+; - RECBIOS -------------
+; - SET BIOS ROM SLOT
+; - 
+
+RECBIOS         LD      A,(EXPTBL)
+
+; - SETSLTP0 ------------
+; - SET SLOT IN PAGE 0
+; - A: SLOT (FXXXSSPP)
+; -
+
+SETSLTP0        DI
+                LD      B,A
+                IN      A,(#A8)
+                AND     %11111100
+                LD      D,A
+                LD      A,B
+                AND     #03
+                OR      D
+                LD      D,A
+                OUT     (#A8),A
+                LD      A,B
+                AND     A
+                RET     P
+                AND     #03
+                RRCA
+                RRCA
+                AND     %11000000
+                LD      C,A
+                LD      A,D
+                AND     %00111111
+                OR      C
+                LD      C,A
+                LD      A,B
+                AND     %00001100
+                RRCA
+                RRCA
+                AND     #03
+                LD      B,A
+                LD      A,C
+                OUT     (#A8),A
+                LD      A,(#FFFF)
+                CPL
+                AND     %11111100
+                OR      B
+                LD      (#FFFF),A
+                LD      C,A
+                LD      A,D
+                OUT     (#A8),A
+                RET
+.END
+
+
+; - GETSLTP3 ------------
+; - GET SLOT PAGE 3
+; - OUTPUT: A SLOT
+; - 
+
+GETSLTP3        CALL    RSLREG 
+                RLCA
+                RLCA
+                AND     3
+                LD      C,A
+                LD      B,0
+                LD      HL,EXPTBL
+                ADD     HL,BC
+                LD      A,(HL)
+                AND     #80
+                OR      C
+                LD      C,A
+                INC     HL
+                INC     HL
+                INC     HL
+                INC     HL
+                LD      A,(HL)
+                RLCA
+                RLCA
+                RLCA
+                RLCA
+                AND     #0C
+                OR      C
+                RET
+
+
+; - SETSLTP3 ------------
+; - SET SLOT IN PAGE 3
+; - A: SLOT (FXXXSSPP)
+; -
+SETSLTP3        POP     HL            
+.NOMEM          LD      B,A            
+                IN      A,(#A8)
+                AND     %00111111
+                LD      D,A            
+                LD      A,B         
+                AND     03  
+                RRCA
+                RRCA
+                OR      D
+                LD      D,A            
+                OUT     (#A8),A
+                LD      A,B
+                BIT     7,A            
+                JR      Z,.EXIT
+                LD      A,B
+                AND     %00001100
+                RRCA
+                RRCA       
+                RRCA
+                RRCA
+                AND     %11000000
+                LD      B,A
+                LD      A,(#FFFF)
+                CPL
+                AND     %00111111
+                OR      B
+                LD      (#FFFF),A      
+.EXIT           JP      (HL)
+.END    
+
+
+;                               *****************************************       
+;                               * PAGE 3 ROUTINES                       *
+;                               *****************************************
+
+
+; - ROM2P3 --------------
+; - ROM PAGE 3 DATA TO 
+; - RAM PAGE 3 
+; - HL: SOURCE
+; - DE: DEST
+; - BC: SIZE
+; - 
+
+ROM2P3          EXX
+                LD      A,(RAMPAGE3)
+                LD      E,A
+                LD      A,(SLOTVAR)
+                CALL    SETSLTP3
+                EXX
+                LD      A,(HL)
+                INC     HL
+                EXX
+                EX      AF,AF
+                LD      HL,.RET
+                LD      A,E
+                JP      SETSLTP3.NOMEM
+.RET            EX      AF,AF
+                EXX     
+                LD      (DE),A
+                INC     DE
+                DEC     BC
+                LD      A,B
+                OR      C
+                JP      NZ,ROM2P3
+                RET
+

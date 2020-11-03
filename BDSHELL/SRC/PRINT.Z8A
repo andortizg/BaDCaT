@@ -1,0 +1,196 @@
+;                               *****************************************
+;                               * PRINT OUTPUT ROUTINES                 *
+;                               *****************************************
+
+
+; --- PRINT                     -----------------------------------------
+    
+
+; - PRTCRLF ------------
+; - PRINT CR/LF
+; - 
+
+PRTCRLF         LD      A,#0D
+                CALL    CHPUT
+                LD      A,#0A
+                JP      CHPUT
+
+
+; - PRINT ---------------
+; - PRINT TEXT
+; - HL: TEXT POINTER
+; - DE: COORD
+; -
+
+PRINT           LD      (CSRY),DE
+.GEN            LD      A,(HL)
+                INC     HL
+                OR      A
+                RET     Z
+                PUSH    HL
+                CALL    CHPUT
+                POP     HL
+                JR      .GEN
+
+
+;- PRINTHEX ------------
+;- A: NUMBER
+;- DE: COORD
+;- 
+PRINTHEX        LD  	(CSRY),DE
+.GEN            PUSH    AF
+                AND     #F0
+                SRL     A
+                SRL     A
+                SRL     A
+                SRL     A
+                LD      E,A
+                LD      D,0
+                LD      HL,.HEXDATA
+                ADD     HL,DE
+                LD      A,(HL)
+                CALL    CHPUT
+                POP     AF
+                AND     #0F
+                LD      E,A
+                LD      D,0
+                LD      HL,.HEXDATA
+                ADD     HL,DE
+                LD      A,(HL)
+                JP      CHPUT
+
+.HEXDATA        DEFM    "0123456789ABCDEF"
+
+
+; - PRTSLOT ------------
+; - PRINT SLOT
+; - A: SLOT (FxxxSSPP)
+; -
+
+PRTSLOT         PUSH    AF
+                AND     3
+                ADD     A,"0"
+                CALL    CHPUT
+                POP     AF
+                AND     A
+                JP      P,.END
+
+                PUSH    AF
+                LD      A,"-"
+                CALL    CHPUT
+                POP     AF
+                SRL     A
+                SRL     A
+                AND     3
+                ADD     A,"0"
+                CALL    CHPUT
+.END            LD      HL,TXTINTR
+                JP      PRINT.GEN
+
+
+
+
+; --- CURSOR                    -----------------------------------------
+
+
+; - DEFCUR ------------
+; - DEFINE CURSOR 
+; - 
+
+DEFCUR          LD      A,(SYSTEM)
+                AND     A
+                LD      DE,SCR0PAT + (#FF * 8)
+                JR      Z,.DEF
+                LD      DE,SCR02PAT + (#FF * 8)
+.DEF            LD      HL,.CURSOR
+                LD      BC,8
+                JP      LDIRVM_B
+
+.CURSOR         DEFS    8, #FF
+
+
+; - PRTCUR -------------
+; - PRINT CURSOR
+; - 
+
+PRTCUR          LD      A,#FF 
+.GEN            CALL    CHPUT
+                LD      A,(CSRX)
+                DEC     A
+                LD      (CSRX),A
+                RET     
+
+; - CLRCUR -------------
+; - CLEAR CURSOR
+; - 
+
+CLRCUR          LD      A,' '
+                JP      PRTCUR.GEN
+
+
+; - CLRCURS ------------
+; - CLEAR CURSOR SAFE
+; - A: CHAR TO CLEAR
+; - 
+
+CLRCURS         LD      C,A
+                LD      A,(CSRX)
+                CP      1
+                RET     Z
+                LD      A,C
+                CALL    CHPUT
+                LD      A,(CSRX)
+                DEC     A
+                LD      (CSRX),A
+                RET     
+
+
+; --- STRING                    -----------------------------------------
+
+
+; - STR2INT ------------
+; - INPUT:
+; - HL: POINTER TO STR NUMBER
+; - OUTPUT:
+; - HL: UNSIGNED INT NUMBER
+; - 
+
+STR2INT         PUSH    HL
+                POP     IX
+                LD      A,(IX + 0)
+                SUB     '0'
+                LD      DE,10000
+                CALL    MULT12                  ; RESULT IN HL
+
+                PUSH    HL
+                LD      A,(IX + 1)
+                SUB     '0'
+                LD      DE,1000
+                CALL    MULT12                  ; RESULT IN HL
+                POP     DE
+                ADD     HL,DE
+                
+                PUSH    HL
+                LD      A,(IX + 2)
+                SUB     '0'
+                LD      DE,100
+                CALL    MULT12                  ; RESULT IN HL
+                POP     DE
+                ADD     HL,DE
+
+                PUSH    HL
+                LD      A,(IX + 3)
+                SUB     '0'
+                LD      DE,10
+                CALL    MULT12                  ; RESULT IN HL
+                POP     DE
+                ADD     HL,DE
+                
+                LD      A,(IX + 4)
+                SUB     '0'
+                LD      E,A
+                LD      D,0
+                ADD     HL,DE
+                RET     
+
+

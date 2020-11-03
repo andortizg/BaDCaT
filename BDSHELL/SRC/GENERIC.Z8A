@@ -1,0 +1,105 @@
+;                               *****************************************
+;                               * GENERIC                               *
+;                               *****************************************
+
+
+
+; --- HL / A                    -----------------------------------------
+
+
+; - ADDHLA -----------------
+; - HL += A
+; -
+
+ADDHLA          ADD     A,L
+                LD      L,A
+                RET     NC
+                INC     H
+                RET
+                
+
+; - ADDHLPNT ------------
+; - A * 2
+; - HL + = A
+; - HL = (HL)
+; - A = (HL)
+; -
+
+ADDHLPNT        ADD     A,A
+                CALL    ADDHLA
+
+
+; - PNTHL ---------------
+; - HL = (HL) 
+; -
+
+PNTHL           LD      A,(HL)
+                INC     HL
+                LD      H,(HL)
+                LD      L,A
+                RET
+
+
+
+; --- FUNCTION KEYS             -----------------------------------------
+
+
+; - CLFNKEY ------------
+; - CLEAR FUNCTION KEYS
+; - 
+
+CLFNKEY         LD      HL,FNKSTR
+                LD      DE,FNKBUF
+                LD      B,#0A
+.LOOP           PUSH    BC
+                LD      A,(HL)
+                LD      (DE),A
+                INC     DE
+                LD      (HL),0
+                LD      BC,#10
+                ADD     HL,BC
+                POP     BC
+                DJNZ    .LOOP
+                RET
+
+; - REFNKEY ------------
+; - RESTORE FUNCTION KEYS
+; - 
+
+REFNKEY         LD      HL,FNKSTR
+                LD      DE,FNKBUF
+                LD      B,#0A
+.LOOP           PUSH    BC
+                LD      A,(DE)
+                INC     DE
+                LD      (HL),A
+                LD      BC,#10
+                ADD     HL,BC
+                POP     BC
+                DJNZ    .LOOP
+                RET
+
+
+; --- MATH                     -----------------------------------------
+
+
+; - MULT12 -------------
+; - A * DE = HL
+; -
+
+
+MULT12          LD      HL,0
+                ADD     A,A
+                JP      NC,.ILOOP
+                LD      H,D
+                LD      L,E
+.ILOOP          LD      B,7
+.LOOP           ADD     HL,HL
+                ADD     A,A
+                JP      NC,.NOADD
+                ADD     HL,DE
+.NOADD          DJNZ    .LOOP
+                RET
+
+
+

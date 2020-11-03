@@ -1,0 +1,483 @@
+;                               *****************************************
+;                               * ROM RELATED                           *
+;                               *****************************************
+
+
+
+; --- CHECK AND DOWNLOAD        -----------------------------------------
+
+
+RROMRUT 
+                ; RUN ROM ROUTINES
+
+                PHASE  RROMORG
+
+
+; - RXROM2M ------------
+; - READ RX DATA (ROM)
+; - TO RAM
+; - HL: SIZE FILE
+; - 
+
+RXROM2M         LD      A,H
+                AND     #C0
+                CP      #C0
+                JP      Z,.LOAD48K
+
+                LD      A,H
+                AND     #80
+                CP      #80
+                JP      Z,.LOAD32K
+
+; --- LOAD16K           -----------------------------------------
+
+
+.LOAD168K       LD      A,L
+                AND     A
+                JP      NZ,.LOAD32K
+
+                LD      A,(RAMTYPUS)
+                CP      RAM32K
+                JP      C,.NOTENMEM            
+
+
+                PUSH    HL
+
+                CALL    PREPRUN
+
+                ; ENABLE RAM PAGE 2
+
+                LD      A,(TRAM2)
+                LD      H,#80
+                CALL    ENASLT
+                
+                POP     HL
+                
+                ; TRANSFER DATA TO PAGE 2
+
+                LD      DE,#8000
+                CALL    RX2MEM
+
+                ; COPY TO PAGE 0 
+
+                LD      A,(TRAM1)
+                LD      H,#40
+                CALL    ENASLT
+                
+                ; SET SLOT TO #4000
+                
+                LD      HL,RROMORGE
+                LD      DE,#4000
+                LD      BC,SETSLTP0.END - SETSLTP0
+                LDIR
+
+                ; SET RAM ON PAGE 0
+                
+                LD      A,(TRAM0)
+                CALL    #4000
+
+                ; COPY DATA
+                
+                LD      HL,#8000
+                LD      DE,#0000
+                LD      BC,#4000
+                LDIR
+
+                ; BIOS ROM PAGE 0
+
+                LD      A,(TEXPTBL)
+                CALL    #4000
+
+                ; COPY ROM DATA TO PAGE 2
+                
+                LD      HL,#8000
+                LD      DE,#4000
+                LD      BC,#4000
+                LDIR
+                
+                ; RUN
+                
+                JP      EXECROM
+
+               
+                
+; --- LOAD32K           -----------------------------------------
+
+
+.LOAD32K        LD      A,L
+                AND     A
+                JP      NZ,.LOAD48K
+                
+                LD      A,(RAMTYPUS)
+                CP      RAM64K
+                JP      C,.NOTENMEM
+                
+                
+                PUSH    HL
+
+                CALL    PREPRUN
+                
+                ; ENABLE RAM PAGE 1
+
+                LD      A,(TRAM1)
+                LD      H,#40
+                CALL    ENASLT
+
+                ; ENABLE RAM PAGE 2
+
+                LD      A,(TRAM2)
+                LD      H,#80
+                CALL    ENASLT
+
+                POP     HL
+                
+                LD      DE,#4000
+                CALL    RX2MEM
+
+
+                ; CHECK RUN ADDRESS
+
+                LD      HL,(#4000)
+                CALL    .CHECKHD
+                LD      HL,(#4002)
+                JR      Z,.CHECKAD
+                LD      HL,(#8002)
+.CHECKAD        LD      A,H                 
+                CP      #40
+                JP      NC,EXECROM
+
+                
+                ; SPECIAL PAGE 0
+
+                LD      HL,#8000
+                LD      DE,RROMORGE
+                LD      BC,SETSLTP0.END - SETSLTP0
+                CALL    SWAPMEM
+
+                LD      A,(TRAM0)
+                CALL    #8000
+
+                LD      HL,#4000
+                LD      DE,#0000
+                LD      BC,#4000
+                LDIR
+
+                LD      A,(TEXPTBL)
+                CALL    #8000
+
+                LD      HL,#8000
+                LD      DE,RROMORGE
+                LD      BC,SETSLTP0.END - SETSLTP0
+                CALL    SWAPMEM
+
+                LD      HL,#8000
+                LD      DE,#4000
+                LD      BC,#4000
+                LDIR
+
+                JP      EXECROM
+                
+.CHECKHD        LD      DE,#4241
+                JP      DCOMPR_B
+
+
+; --- LOAD48K           -----------------------------------------
+
+
+.LOAD48K        LD      A,L
+                AND     A
+                JP      NZ,.MAX48K
+                
+                LD      A,(RAMTYPUS)
+                CP      RAM64K
+                JP      C,.NOTENMEM
+
+                PUSH    HL
+
+                CALL    PREPRUN
+
+                ; ENABLE RAM PAGE 1
+
+                LD      A,(TRAM1)
+                LD      H,#40
+                CALL    ENASLT
+
+                ; ENABLE RAM PAGE 2
+
+                LD      A,(TRAM2)
+                LD      H,#80
+                CALL    ENASLT
+
+                ; SET SLOT TO #8000
+                
+                LD      HL,RROMORGE
+                LD      DE,#8000
+                LD      BC,SETSLTP0.END - SETSLTP0
+                LDIR
+
+                LD      A,(TRAM0)
+                CALL    #8000
+
+                POP     HL
+
+                LD      DE,#0000
+                CALL    RX2MEM
+
+                ; NOW WE NEED RETURN BIOS TO PAGE 0
+                
+                LD      HL,#8000
+                LD      DE,RROMORGE
+                LD      BC,SETSLTP0.END - SETSLTP0
+                CALL    SWAPMEM
+
+                LD      A,(TEXPTBL)
+                CALL    #8000
+                
+                LD      HL,#8000
+                LD      DE,RROMORGE
+                LD      BC,SETSLTP0.END - SETSLTP0
+                CALL    SWAPMEM
+
+                
+                ; RUN ROM
+
+                JP      EXECROM
+
+
+; --- ERRORS            -----------------------------------------
+
+
+                ; MAX 48K
+
+.MAX48K         LD      HL,TXTMAX48
+
+                ; GENERIC ERROR
+
+.ERRORPRT       CALL    PRINT.GEN
+.ERROR          SCF
+                RET
+                
+                ; NOT ENOUGH MEMORY
+
+.NOTENMEM       LD      HL,TXTNEMEM
+                JR      .ERRORPRT
+
+
+; --- RUN ROM                   -----------------------------------------
+
+; - PREPRUN -------------
+; - PREPARE TO RUN ROM
+; - 
+
+PREPRUN         DI
+
+                ; RESTART HKEY ISR
+
+                LD      HL,TOLDKEY
+                LD      DE,HKEYI
+                LD      BC,5
+                LDIR
+
+                ; RESTORE HTIMI ISR
+
+                LD      HL,TOLDTIM
+                LD      DE,HTIMI
+                LD      BC,5
+                LDIR
+                
+                RET
+
+
+
+; - EXECROM -----------
+; - EXECUTE LOADED (MEMORY) ROM
+; -  
+
+EXECROM         DI
+
+                ; UART DEINIT
+
+                LD      A,%00000111
+                OUT     (BPORT + 3),A
+                XOR     A
+                OUT     (BPORT + 4),A
+                OUT     (BPORT + 1),A
+
+                ; CLEAR BDOS HOOKS
+                
+                IF      PTYPE = TCOM
+                LD      A,#C9
+                LD      (#F368),A
+                LD      (#F36B),A
+                LD      (#F36E),A
+                ENDIF
+
+                ; PRINT MSG
+
+                LD      HL,.TXTRROM
+.PRINT          LD      A,(HL)
+                AND     A
+                JR      Z,.SCREEN1
+                PUSH    HL
+                CALL    CHPUT
+                POP     HL
+                INC     HL
+                JR      .PRINT
+
+                ; SCREEN 1 (A-TRAIN)
+
+.SCREEN1        XOR     A
+                LD      (CSRSW),A
+                LD      A,15
+                LD      (FORCLR),A
+                LD      A,4
+                LD      (BAKCLR),A
+                LD      A,7
+                LD      (BDRCLR),A
+                LD      A,29
+                LD      (LINL32),A
+                LD      A,1
+                CALL    CHGMOD
+
+                DI 
+
+                ; CHECK RUN PAGE / ADDRESS
+                
+                LD      HL,(#4000)
+                LD      DE,#4241
+                RST     DCOMPR_B
+                LD      HL,(#4002)
+                JR      Z,.FRUN
+                LD      HL,(#8002)
+.FRUN           LD      A,H
+                CP      #40
+                JR      NC,.STAND
+
+                PUSH    HL
+
+                ; PAGE 0 ADDRESS
+                
+                LD      HL,#8000
+                LD      DE,RROMORGE
+                LD      BC,SETSLTP0.END - SETSLTP0
+                CALL    SWAPMEM
+
+                LD      A,(TRAM0)
+                CALL    #8000
+                
+                LD      HL,#8000
+                LD      DE,RROMORGE
+                LD      BC,SETSLTP0.END - SETSLTP0
+                CALL    SWAPMEM
+
+                POP     HL
+
+.STAND          CALL    .RUN
+                LD      HL,HSTKE
+.RUN            JP      (HL)
+
+.TXTRROM        DEFB    #0D, #0A
+                DEFM    "Run ROM file..."
+                DEFB    #0D, #0A, 0
+
+
+
+; --- TRANSFER  / DOWNLOAD              -----------------------------------------
+
+
+; - RX2MEM ------------
+; - TRANSFER HL BYTES FROM
+; - UART TO MEM
+; - HL: BYTES TO TRANSFER
+; - DE: DEST
+; - 
+
+RX2MEM          DI
+
+                ; DISABLE INTERRUPTS
+
+                XOR     A
+                OUT     (BPORT + 1),A
+                
+                ; START DOWNLOAD
+
+                LD      A,'>'
+                CALL    .RSOUT
+                LD      A,'+'
+                CALL    .RSOUT
+
+.NOINIT         IN      A,(BPORT + 5)
+                AND     1
+                JR      NZ,.MRXFIFO
+.LBC            LD      A,2
+                OUT     (BPORT + 4),A
+                JR      .NOINIT
+.MRXFIFO        IN      A,(BPORT + 5)
+                AND     1
+                JR      Z,.LBC
+
+                ; READ BYTE
+
+                IN      A,(BPORT)
+                LD      (DE),A
+                INC     DE
+                DEC     HL
+                LD      A,H
+                OR      L
+                JR      NZ,.MRXFIFO
+
+                RET
+
+                ; MEM RSOUT
+                
+.RSOUT          PUSH    AF
+.WAIT           IN      A,(BPORT + 5)
+                AND     32
+                JP      Z,.WAIT
+                POP     AF
+                OUT     (BPORT),A
+                RET
+
+
+                
+; - SWAPMEM ------------
+; - SWAP TWO MEMORY BLOCKS
+; - HL: BLOCK 1 POINTER
+; - DE: BLOCK 2 POINTER
+; - BC: SIZE
+; -
+
+SWAPMEM         PUSH    BC
+                LD      C,(HL)
+                LD      A,(DE)
+                EX      DE,HL
+                LD      (HL),C
+                LD      (DE),A
+                POP     BC
+                INC     HL
+                INC     DE
+                DEC     BC
+                LD      A,B
+                OR      C
+                JR      NZ,SWAPMEM
+                RET
+
+
+
+; --- EXTRA VARS COPY                   -----------------------------------------
+
+
+TRAM0           DEFB    0
+TRAM1           DEFB    0
+TRAM2           DEFB    0
+TRAM3           DEFB    0
+TEXPTBL         DEFB    0
+TOLDKEY         DEFS    5
+TOLDTIM         DEFS    5
+
+RROMORGE
+
+                DEPHASE
+
+
+

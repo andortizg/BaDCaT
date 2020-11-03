@@ -1,0 +1,66 @@
+; *****************************************************************************
+; * BDSHELL (CAS VERSION)                                                     *
+; * (C) ANDRES ORTIZ / ARMANDO PEREZ                                          *
+; *****************************************************************************
+
+
+; --- HARD AND CONSTANTS        -----------------------------------------
+
+
+                INCLUDE HARD.Z8A
+                INCLUDE CONST.Z8A
+
+
+; --- FLAGS                     -----------------------------------------
+
+
+PTYPE           EQU     TCAS    ; TYPE CAS FILE
+
+
+; --- CAS HEADER                -----------------------------------------
+
+                ; .CAS HEADER 
+
+                DEFB    #1F, #A6, #DE, #BA
+                DEFB    #CC, #13, #7D, #74 
+
+                ; .BIN HEADER
+
+                DEFB    #D0, #D0, #D0, #D0
+                DEFB    #D0, #D0, #D0, #D0
+                DEFB    #D0, #D0
+                 
+                ; .BIN NAME
+
+                DEFM    "BDSHEL"
+
+                ; .CAS HEADER 
+
+                DEFB    #1F, #A6, #DE, #BA
+                DEFB    #CC, #13, #7D, #74 
+
+
+; --- BIN HEADER                -----------------------------------------
+
+                ORG     BINORG - 6
+
+                DEFW    INIT
+                DEFW    END - 1
+                DEFW    START
+
+
+; --- PROGRAM                    -----------------------------------------
+
+INIT
+                ; PROGRAM
+
+                INCLUDE PROGRAM.Z8A
+END
+                ; VARS
+                
+                INCLUDE GVARS.Z8A
+
+
+
+
+

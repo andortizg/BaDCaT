@@ -1,0 +1,67 @@
+; *****************************************************************************
+; * BDSHELL (MSX-DOS VERSION)                                                 *
+; * (C) ANDRES ORTIZ / ARMANDO PEREZ                                          *
+; *****************************************************************************
+
+
+; --- HARD AND CONSTANTS        -----------------------------------------
+
+
+                INCLUDE HARD.Z8A
+                INCLUDE CONST.Z8A
+
+
+; --- FLAGS                     -----------------------------------------
+
+
+PTYPE           EQU     TCOM   ; TYPE COMMAND
+
+
+; --- MSXDOS HEADER              -----------------------------------------
+
+
+                ORG     #100
+
+
+; --- PROGRAM                    -----------------------------------------
+
+                JP      REALLOC
+               
+
+; - REALLOC -----------
+; - REALLOCATE CODE
+; - ENABLE BIOS
+; - 
+
+REALLOC         LD      HL,RFROM
+                LD      DE,RPROG
+                LD      BC,REND - RPROG
+                LDIR
+                JP      RPROG
+
+RFROM 
+                PHASE   #4010
+
+; - RPROG -------------
+; - ENABLE BIOS PAGE 0
+; - RUN PROGRAM 
+; - SIMULATE ROM VERSION
+; - 
+
+RPROG           LD      A,(EXPTBL)
+                CALL    SETSLTP0
+                JP      START
+        
+                ; PROGRAM
+
+                INCLUDE PROGRAM.Z8A
+
+                ; VARS
+                
+                INCLUDE GVARS.Z8A
+REND
+                DEPHASE  
+
+
+
+

@@ -1,0 +1,23 @@
+;                               *****************************************
+;                               * BADCAT RELATED                        *
+;                               *****************************************
+
+
+; - CHECKBC ------------
+; - CHECK IF BADCAT WIFI
+; - IS PRESENT
+; - Zy = 1 -> PRESENT
+; -
+
+CHECKBC         LD      A,#55
+                OUT     (BCSCRA),A
+                IN      A,(BCSCRA)
+                CP      #55
+                RET     NZ
+                LD      A,#AA
+                OUT     (BCSCRA),A
+                IN      A,(BCSCRA)
+                CP      #AA
+                RET
+                
+

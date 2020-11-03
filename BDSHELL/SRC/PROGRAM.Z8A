@@ -1,0 +1,808 @@
+; *****************************************************************************
+; * BDSHELL MAIN (SHARED) PROGRAM                                             *
+; * (C) ANDRES ORTIZ / ARMANDO PEREZ                                          *
+; *****************************************************************************
+
+
+; --- SLOT / RAM ROUTINES       -----------------------------------------
+
+
+                INCLUDE SLOT.Z8A
+                INCLUDE RAM.Z8A
+
+
+; --- PROGRAM                   -----------------------------------------
+
+
+
+; - START --------------
+; - PROGRAM START
+; - 
+
+
+START           
+                
+                ; THIS IS ONLY FOR ROM VERSION
+                ; WAIT UNTIL DISK IS INITIALIZED
+                
+                IF      PTYPE == TROM 
+
+                IF      ROMDSK
+                
+                CALL    SEARSLOT
+                LD      H,A
+                LD      L,#F7
+                LD      (HSTKE),HL
+                LD      HL,.DSK
+                LD      (HSTKE + 2),HL
+                LD      A,#C9
+                LD      (HSTKE + 4),A
+                RET
+
+.DSK            LD      A,#C9
+                LD      (HSTKE),A
+                ENDIF
+
+                ENDIF
+
+                DI
+
+                
+                ; CLEAR VARS
+
+                LD      HL,INITVARS
+                LD      DE,INITVARS + 1
+                LD      BC,ENDVARS - INITVARS
+                LD      (HL),0
+                LDIR
+
+               
+                ; CLEAR FUNCTION KEYS
+
+                CALL    CLFNKEY
+
+                ; GET SYSTEM
+
+                LD      A,(#2D)
+                LD      (SYSTEM),A
+                LD      A,(#2B)
+                AND     %10000000
+                RLCA
+                RLCA
+                LD      (FREQSET),A
+                LD      (SAVESP),SP
+                
+                LD      A,(CNSDFG)
+                LD      (CNSDFGT),A
+                
+                ; SCREEN 0 W. 40 - 80 COL.
+                ; KEEP USER COLORS
+
+                LD      A,(SYSTEM)
+                AND     A
+                LD      A,40
+                JR      Z,.SETCOL
+                LD      A,80
+.SETCOL         LD      (LINL40),A
+                CALL    ERAFNK
+                XOR     A
+                CALL    CHGMOD
+
+
+                ; INIT VARS
+
+
+                ; PRINT LOGO
+
+                LD      HL,TXTLOGO
+                LD      DE,#0101
+                CALL    PRINT
+
+
+                ; GET SLOTVAR AND RAM VALUES
+
+                IF      (PTYPE == TCOM)
+
+                LD      A,(RAMAD0)
+                LD      (RAMPAGE0),A
+                LD      A,(RAMAD1)
+                LD      (RAMPAGE1),A
+                LD      (SLOTVAR),A
+                LD      A,(RAMAD2)
+                LD      (RAMPAGE2),A
+                LD      A,(RAMAD3)
+                LD      (RAMPAGE3),A
+                LD      A,RAM64K
+                LD      (RAMTYPUS),A
+
+                ELSE 
+
+                CALL   SEARSLOT
+                LD      (SLOTVAR),A
+                CALL    SEARRAM
+
+                ENDIF
+
+                ; THIS IS A BIT SPECIAL
+                ; TO AVOID OVERWRITE DISK VARS
+                ; WE DON'T INIT STACK POINTER
+                ; HOWEVER IN 8K SYSTEM THERE IS NO DISK
+                ; SO SP IS SET TO STANDARD #F380
+                ; OF COURSE, ROM WITHOUT  DISK MUST BE
+                ; INITIALIZED AS STANDARD 
+
+                IF      ( PTYPE == TROM and ROMDSK == 0 )
+
+                ELSE
+
+                LD      A,(RAMTYPUS)
+                CP      RAM8K
+                JR      NZ,.NOSTACK
+
+                ENDIF
+
+                ; DISABLE OLD HOOKS
+
+                LD      A,#C9
+                LD      (HKEYI),A
+                LD      (HTIMI),A
+
+                LD      SP,#F380
+
+.NOSTACK                
+
+                ; SHOW MSX SYSTEM
+
+                CALL    PTRMODEL
+
+                ; SHOW RAM TYPE
+
+                CALL    PRTRTYPE
+
+                ; SHOW DISK 
+
+                CALL    PRTDISK
+
+                ; SHOW BADCAT STATUS
+
+                CALL    PRTBADC
+
+                CALL    PRTCRLF
+
+
+                ; DISABLE BADCAT
+                        
+                CALL   UARTDINI 
+
+                ; INTERRUPT
+
+                LD      HL,TXTIINT
+                CALL    PRINT.GEN
+                CALL    INTINIT
+                
+                ; UART INIT
+
+                LD      HL,TXTIUAR
+                CALL    PRINT.GEN
+                CALL    UARTINIT 
+
+                CALL    PRTCRLF
+
+                ; KEYBOARD INIT
+
+                CALL    KEYINIT
+
+                ; CURSOR INIT
+
+                CALL    DEFCUR
+
+                ; ROM ROUTINES AT PAGE 3
+
+                LD      HL,RROMRUT
+                LD      DE,RROMORG
+                LD      BC,RROMORGE - RROMORG
+                LDIR
+                
+                ; SETSLTP0 AT PAGE 3
+
+                LD      HL,SETSLTP0
+                LD      DE,RROMORGE
+                LD      BC,SETSLTP0.END - SETSLTP0
+                LDIR
+
+                ; COPY OF VARS 
+
+                LD      HL,RAMPAGE0
+                LD      DE,TRAM0
+                LD      BC,4
+                LDIR
+
+                LD      A,(EXPTBL)
+                LD      (TEXPTBL),A
+
+                LD      HL,OLDHKEY
+                LD      DE,TOLDKEY
+                LD      BC,5
+                LDIR
+
+                LD      HL,OLDHTIM
+                LD      DE,TOLDTIM
+                LD      BC,5
+                LDIR
+
+
+
+                ; CLEAN BUFFER 
+
+                CALL    FLUSHBUF
+
+                ; ENABLE RTS AND INTERRUPT
+                
+                LD      A,#02
+                OUT     (BPORT + 4),A   ; RTS = 1 TO RECEIVE AND LOOPBACK
+
+
+                IF      SENDIC
+
+                ; SEND ATZ COMMAND
+
+                LD      HL,CMDATZ
+                CALL    SENDCMD
+
+                ; WAIT UNTIL BUFFER IS EMPTY
+                
+                CALL    WAITEBUF
+
+                ; SEND ATE1 COMMAND
+
+                IF      ECHOON
+                LD      HL,CMDATE1
+                ELSE
+                LD      HL,CMDATE0
+                ENDIF
+                
+                CALL    SENDCMD
+
+                ; WAIT UNTIL BUFFER IS EMPTY
+                
+                CALL    WAITEBUF
+
+                ENDIF
+
+                ; RESET INTERNAL JIFFY 
+
+                XOR     A
+                LD      (INTCNT),A
+
+                ; READY?
+                
+                LD      HL,TXTREADY
+                CALL    PRINT.GEN
+
+                ; PRINT CURSOR
+
+                CALL    PRTCUR
+
+                LD      A,1
+                OUT     (BPORT + 1),A   ; ENABLE DATA RECEIVED INTERRUPT
+                
+                XOR     A
+                LD      (JIFFY),A
+                LD      (MSTAT),A
+
+                EI
+                
+
+; --- MAIN LOOP                 -----------------------------------------
+
+
+; - MAIN ---------------
+; - MAIN LOOP
+; - 
+
+MAIN            LD      A,(KEYTRG)
+                LD      C,A
+
+                ; CHECK F5 (AVOID ROM VERSION)
+
+                IF      PTYPE != TROM
+                AND     %00000010
+                JP      Z,EXIT
+                ENDIF
+
+                ; CHECK F1 TO LOAD ROM
+
+                LD      A,C
+                AND     %00100000
+                JP      Z,LOADROM
+
+                ; WRITE DATA
+
+                CALL    WRTDATA
+
+                ; READ DATA
+                
+                CALL    READDATA
+
+                ; PRINT CURSOR
+                
+                LD      A,(MSTAT)
+                AND     STAWRTM | STAREADM
+                CALL    Z,PRTCUR
+
+
+                EI
+                JP      MAIN
+
+
+
+
+; --- DATA CONTROL              -----------------------------------------
+
+
+; - WRTDATA -----------
+; - CHECK AND WRITE DATA
+; - 
+
+WRTDATA         CALL    RSINBUF
+                JP      NZ,.WRITE
+                
+                ; CLEAR FLAG
+
+.NOWRT          LD      A,(MSTAT)
+                AND     ~STAWRTM 
+                LD      (MSTAT),A
+                RET
+
+.WRITE          PUSH    AF 
+                LD      A,#02
+                OUT     (BPORT + 4),A   ; RTS = 1 TO RECEIVE AND LOOPBACK
+                LD      A,(MSTAT)
+                AND     STAWRTM
+                JP      NZ,.PRINT
+
+                ; CLEAR CURSOR
+
+                PUSH    HL
+                CALL    CLRCUR
+                POP     HL
+
+                ; PRINT RTS
+
+.PRINT          LD      A,(MSTAT)
+                OR      STAWRTM
+                LD      (MSTAT),A
+
+                POP     AF
+                JP      PRTRTS
+                
+
+; - READDATA ----------
+; - CHECK AND READ DATA
+; - 
+
+READDATA        LD      A,(MSTAT)
+                AND     STAWRTM
+                RET     NZ
+                
+                CALL    INKEY
+                JP      NZ,.SEND
+
+.NOSEND         LD      A,(MSTAT)
+                AND     ~STAREADM 
+                LD      (MSTAT),A
+                RET
+
+                ; SEND KEY
+
+.SEND           CALL    PRTKEY
+
+
+                ; SET FLAG READ
+                
+                LD      A,(MSTAT)
+                OR      STAREADM
+                LD      (MSTAT),A
+                RET
+
+; --- EXIT                      -----------------------------------------
+
+                IF      PTYPE != TROM
+
+; - EXIT --------------
+; - EXIT PROGRAM
+; - 
+
+EXIT            
+
+                ; CLOSING... 
+                
+                LD      HL,TXTCLOSE
+                CALL    PRINT.GEN
+
+                DI
+
+                ; DISABLE INTERRUPTS
+                
+                XOR     A
+                OUT     (BPORT + 1),A   
+                
+
+                ; RESTART HKEY ISR
+
+                LD      HL,OLDHKEY
+                LD      DE,HKEYI
+                LD      BC,5
+                LDIR
+
+                ; RESTORE HTIMI ISR
+
+                LD      HL,OLDHTIM
+                LD      DE,HTIMI
+                LD      BC,5
+                LDIR
+
+                LD      HL,CMDCLOSE
+                CALL    SENDCMD
+
+                ; WAIT...
+
+                EI
+                LD      B,120
+.WAIT           HALT
+                DJNZ    .WAIT
+
+                CALL    WAITEBUF
+
+                
+                CALL    UARTDINI
+
+                
+                ; RESTORE FUNCTION KEYS
+
+                CALL    REFNKEY
+                LD      A,(CNSDFGT)
+                AND     A
+                CALL    NZ,DSPFNK
+
+                ; BYE!
+                
+                LD      HL,TXTBYE
+                CALL    PRINT.GEN
+
+                ; MSX-DOS COMMAND, RETURN PAGE 0
+
+                IF      PTYPE = TCOM
+                LD      A,(RAMAD0)
+                CALL    SETSLTP0
+                LD      SP,(SAVESP)
+                JP      0
+                ENDIF
+
+
+                LD      SP,(SAVESP)
+                RET
+
+
+                ENDIF
+
+
+
+; ---  KEY / JOY                -----------------------------------------
+
+
+; - INKEY --------------
+; - READ KEY
+; - Z = 1 BUFFER EMPTY
+; - OUTPUT: A KEY
+
+INKEY           CALL    CHSNS
+                RET     Z
+                JP      CHGET
+
+
+; ---  CONSOLE SPECIAL PRT      -----------------------------------------
+
+
+; - PRTRTS -------------
+; - PRINT RTS BUFFER
+; - A: SIZE
+; - HL: POINTER
+;
+
+PRTRTS          LD      B,A 
+
+                ; PRINT BUFFER
+                
+.LOOP           PUSH    BC
+                PUSH    HL
+
+                LD      A,(HL)
+
+                ; BACK?
+                CP      8
+                JP      Z,.BACK
+
+                ; IS != LF?
+                
+                CP      #0A
+                JP      NZ,.NKEY
+
+                ; LF
+                CALL    CHPUT
+                LD      A,#0D
+                JP      .NKEY
+
+                ; SPECIAL BACKSPACE
+
+.BACK           LD      A,(CSRX)
+                CP      1
+                JP      Z,.NEXT
+
+                LD      A,8
+                CALL    CHPUT
+                LD      A,' '
+                CALL    CHPUT
+                LD      A,8
+
+                ; WRITE BYTE
+
+.NKEY           CALL    CHPUT
+.NEXT           POP     HL
+                INC     L
+                POP     BC
+                DJNZ    .LOOP
+                
+                RET
+
+
+
+                
+
+
+; - PRTKEY -------------
+; - PRINT KEY
+; - A: KEY
+; -
+
+PRTKEY          CP      #08
+                JP      Z,PRTBACKS
+
+                IF      !ECHOON
+                CP      #0D
+                JR      NZ,.KEY
+                LD      A,#0A
+                CALL    CHPUT
+                LD      A,#0D
+.KEY            PUSH    AF
+                CALL    CHPUT
+                POP     AF
+                ENDIF
+
+.SEND           JP      RSOUT
+
+                
+; - PRTBACKS -----------
+; - PRINT BACK SPACE
+; - 
+
+PRTBACKS        LD      A,(CSRX)
+                CP      1
+                RET     Z
+
+                IF      !ECHOON
+                LD      A,' '
+                CALL    CHPUT
+                LD      A,8
+                CALL    CHPUT
+                LD      A,8
+                CALL    CHPUT
+                LD      A,' '
+                CALL    CHPUT
+                LD      A,8
+                CALL    CHPUT
+                ENDIF
+
+                LD      A,8
+                JP      RSOUT
+                
+                
+; ---  PRINT                  -----------------------------------------
+
+
+; - PRTBADC -----------
+; - PRINT BADCAT STATUS
+; - 
+
+PRTBADC         LD      HL,TXTBCP
+                CALL    PRINT.GEN
+                CALL    CHECKBC
+                LD      HL,TXTNFOUN
+                JR      NZ,.PRINT
+                LD      HL,TXTFOUN
+.PRINT          JP      PRINT.GEN
+
+
+; - PRTDISK ------------
+; - SHOW DISK STATUS
+; - 
+
+PRTDISK         LD      HL,TXTDISK
+                CALL    PRINT.GEN
+
+                LD      A,(HPHYD)
+                LD      HL,TXTDIS
+                CP      #C9
+                JR      Z,.PRINT
+                LD      HL,TXTENA
+.PRINT          JP      PRINT.GEN
+
+
+; - PRTRTYPE -----------
+; - SHOW RAM TYPE
+; - 
+
+PRTRTYPE        LD      A,(RAMTYPUS)
+                LD      HL,.PNTTXT
+                CALL    ADDHLPNT
+                JP      PRINT.GEN
+
+.PNTTXT         DEFW    TXTRT8K 
+                DEFW    TXTRT16K
+                DEFW    TXTRT32K
+                DEFW    TXTRT48K
+                DEFW    TXTRT64K
+
+
+; - PTRMODEL ------------
+; - SHOW MSX MODEL
+; - 
+
+PTRMODEL        LD      HL,TXTMODEL 
+                CALL    PRINT.GEN
+                LD      A,(SYSTEM)
+                LD      HL,.PNTTXT
+                CALL    ADDHLPNT
+                JP      PRINT.GEN
+
+.PNTTXT         DEFW    TXTMSX1
+                DEFW    TXTMSX2
+                DEFW    TXTMSX2P
+                DEFW    TXTMSXTR
+
+
+
+; --- LOAD ROM                  -----------------------------------------
+
+
+; - LOADROM ------------
+; - LOAD ROM FILE
+; - 
+
+LOADROM         CALL    CLRCUR 
+
+                LD      HL,TXTDOWN
+                CALL    PRINT.GEN
+                
+                ; DISABLE RTS
+                
+                XOR     A
+                OUT     (BPORT + 4),A
+
+                ; FLUSH BUFFER
+
+                CALL     FLUSHBUF
+
+                ; ENABLE RTS
+
+                LD      A,#02
+                OUT     (BPORT + 4),A
+                
+                ; REQUEST FILE SIZE
+
+                LD      A,'<'
+                CALL    RSOUT
+                
+                LD      B,60 * 4                ; APROX 4 SECONDS (NTSC)
+.WAIT           HALT 
+                CALL    CHINBUF
+                CP      5
+                JP      NC,.LEN
+                DJNZ    .WAIT
+
+                ; TIMEOUT ERROR
+                
+                XOR     A
+                OUT     (BPORT + 4),A
+                
+                LD      HL,TXTTOUT
+                CALL    PRINT.GEN
+                
+.RETMAIN        ; FLUSH BUF AND RETURN MAIN
+
+                CALL    FLUSHBUF
+                
+                LD      A,#02
+                OUT     (BPORT + 4),A
+                LD      A,1
+                OUT     (BPORT + 1),A
+                EI
+                JP      MAIN
+
+                ; GET LEN
+
+.LEN            DI 
+                XOR     A
+                OUT     (BPORT + 4),A
+
+                LD      HL,STRNUM
+                LD      DE,STRNUM + 1
+                LD      BC,6
+                LD      (HL),0
+                LDIR
+                LD      B,5
+
+                LD      HL,STRNUM
+
+.LOOPL          PUSH    HL 
+                CALL    RSIN
+                POP     HL
+                LD      (HL),A
+                INC     HL
+                DJNZ    .LOOPL
+
+
+                LD      HL,TXTLOAD
+                CALL    PRINT.GEN
+                LD      HL,STRNUM
+                CALL    PRINT.GEN
+                LD      HL,TXTBYTE
+                CALL    PRINT.GEN
+
+                LD      HL,STRNUM
+                CALL    STR2INT
+
+                ; HL BYTES
+
+                CALL    RXROM2M
+                
+                ; ERROR?
+
+                JP      .RETMAIN
+
+
+; --- INCLUDES                  -----------------------------------------
+                
+                ; BADCAT
+
+                INCLUDE BADCAT.Z8A
+
+                ; UART
+
+                INCLUDE UART.Z8A
+
+                ; INTERRUPT
+
+                INCLUDE INTER.Z8A
+
+                ; PRINT / OUTPUT
+                
+                INCLUDE PRINT.Z8A
+               
+                ; KEYBOARD
+
+                INCLUDE  KEYJOY.Z8A
+
+                ; ROM LOAD
+
+                INCLUDE ROM.Z8A
+
+                ; GENERIC ROUTINES 
+
+                INCLUDE GENERIC.Z8A
+
+                ; TABLES / RESOURCES
+
+                INCLUDE TABLES.Z8A
+
+
