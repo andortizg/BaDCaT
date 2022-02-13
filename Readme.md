@@ -1,32 +1,34 @@
-#BaDCaT Wifi modem
+# BaDCaT Wifi modem
 -----------------
 BaDCaT, is a WiFi modem to connect our MSX computers to the Internet. The main goal was to reduce Z80 CPU load as much as possible with the addition of external hardware in the same cartridge for TCP/IP processing. On the other hand to be able to work on MSX1 computers even with low RAM. All this process is carried out by an ESP8266 integrated circuit, specifically the ESP12 version with 4MB of flash memory.
 
-The cartridge consists of an UART 16C550C which implements an RS232 port as interface between ESP12 and the MSX bus. It also provides an standard serial port to the MSX. In short, we could say that this cartridge features two working modes:
+The cartridge consists of an UART 16C550C which implements an RS232 port as interface between ESP12 and the MSX bus. It also provides an standard serial
+port to the MSX. In short, we could say that this cartridge features two working modes:
 
-    MSX1: both the TCP/IP stack and telnet client run on the cartridge. The computer would only run a terminal program.
+    - MSX1: both the TCP/IP stack and telnet client run on the cartridge. The computer would only run a terminal program.
 
-    MSX2 and higher: the TCP/IP stack runs on cartridge and telnet client on the MSX. To do this, the ducasp's telnet version has been modified in order to offer the same functionality with the WiFi modem and UNAPI interfaces. This telnet version is already available on ducasp's Github.
+    - MSX2 and higher: the TCP/IP stack runs on cartridge and telnet client on the MSX. To do this, the ducasp's telnet version has been modified in order to 
+    offer the same functionality with the WiFi modem and UNAPI interfaces. This telnet version is already available on ducasp's Github.
 
-#Technical specifications:
+# Technical specifications:
 
-    MSX1/MSX2 (and higher) compatible.
+    - MSX1/MSX2 (and higher) compatible.
 
-    Serial port up to 115200 bps.
+    - Serial port up to 115200 bps.
 
-    RTS/CTS flow control.
+    - RTS/CTS flow control.
 
-    Fossil driver compatible (without any modification).
+    - Fossil driver compatible (without any modification).
 
-    ESP12 modem based on zimodem, effective speed of 57600 bps.
+    - ESP12 modem based on zimodem, effective speed of 57600 bps.
 
-    ducasp's telnet compatible and with all its functionalities (fast ANSI decoding, files download...)
+    - Ducasp's telnet compatible and with all its functionalities (fast ANSI decoding, files download...)
 
-    Possibility of running telnet client on the cartridge itself.
+    - Possibility of running telnet client on the cartridge itself.
 
-    Upgradable firmware.
+    - OTA Upgradable firmware.
 
-    Experimental feature: loading roms up to 48KB (thanks to Armando Pérez!)
+    - Experimental feature: loading roms up to 48KB (thanks to Armando Pérez!)
 
 
 
