@@ -14,7 +14,7 @@ It also provides an standard serial port to the MSX. In short, we could say that
 
     * MSX1/MSX2 (and higher) compatible.
 
-    * Serial port up to 115200 bps.
+    * RS232 Serial port up to 115200 bps.
 
     * RTS/CTS flow control.
 
