@@ -13,9 +13,9 @@ port to the MSX. In short, we could say that this cartridge features two working
 
 # Technical specifications:
 
-    * MSX1/MSX2 (and higher) compatible.
+    *MSX1/MSX2 (and higher) compatible.
 
-    * Serial port up to 115200 bps.
+    *Serial port up to 115200 bps.
 
     * RTS/CTS flow control.
 
