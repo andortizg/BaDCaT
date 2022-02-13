@@ -22,7 +22,7 @@ It also provides an standard serial port to the MSX. In short, we could say that
 
     * ESP12 modem based on zimodem, effective speed of 57600 bps.
 
-    * Ducasp's telnet compatible and with all its functionalities (fast ANSI decoding, files download...)
+    * Ducasp's telnet compatible and with all its functionalities (fast ANSI decoding, file downloading...)
 
     * Possibility of running telnet client on the cartridge itself.
 
