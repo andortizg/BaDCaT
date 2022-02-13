@@ -30,7 +30,7 @@ port to the MSX. In short, we could say that this cartridge features two working
 
     * Experimental feature: loading roms up to 48KB (thanks to Armando Pérez!)
 
-# WARNING!: do not change FLOW option in the configuration menu unless you are completely sure of what you are doing! Making this permanent could cause malfunction of your BaDCaT!!
+# WARNING!: do not change FLOW option in the configuration menu unless you are completely sure of what you are doing! Making this permanent could cause malfunction of the BaDCaT!!
 
 ![alt text](https://github.com/andortizg/BaDCaT/blob/master/badcats.jpg?raw=true)
 
