@@ -6,16 +6,15 @@ by an ESP8266 integrated circuit, specifically the ESP12 version with 4MB of fla
 The cartridge consists of an UART 16C550C which implements an RS232 port as interface between ESP12 and the MSX bus. It also provides an standard serial
 port to the MSX. In short, we could say that this cartridge features two working modes:
 
-    - MSX1: both the TCP/IP stack and telnet client run on the cartridge. The computer would only run a terminal program.
-
-    - MSX2 and higher: the TCP/IP stack runs on cartridge and telnet client on the MSX. To do this, the ducasp's telnet version has been modified 
+    * MSX1: both the TCP/IP stack and telnet client run on the cartridge. The computer would only run a terminal program.
+    * MSX2 and higher: the TCP/IP stack runs on cartridge and telnet client on the MSX. To do this, the ducasp's telnet version has been modified 
     in order to offer the same functionality with the WiFi modem and UNAPI interfaces. This telnet version is already available on ducasp's Github.
 
 # Technical specifications:
 
-    *MSX1/MSX2 (and higher) compatible.
+    * MSX1/MSX2 (and higher) compatible.
 
-    *Serial port up to 115200 bps.
+    * Serial port up to 115200 bps.
 
     * RTS/CTS flow control.
 
@@ -31,7 +30,7 @@ port to the MSX. In short, we could say that this cartridge features two working
 
     * Experimental feature: loading roms up to 48KB (thanks to Armando Pérez!)
 
-
+# WARNING!: do not change FLOW option in the configuration menu unless you are completely sure of what you are doing! Making this permanent could cause malfunction of your BaDCaT!!
 
 ![alt text](https://github.com/andortizg/BaDCaT/blob/master/badcats.jpg?raw=true)
 
