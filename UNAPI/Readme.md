@@ -23,5 +23,5 @@ Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 - Use badcat_config tool with the repository: <badcatrepo.duckdns.org>
 
 
-If you like to improve the firmware or to add new features, contact me!
+### If you like to improve the firmware or to add new features, contact me!
 
