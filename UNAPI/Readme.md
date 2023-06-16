@@ -1,5 +1,4 @@
 # UNAPI driver for BaDCaT wifi modem.
--------------------------------------
 Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 
 - badcat_config : Configuration and firmware utility
