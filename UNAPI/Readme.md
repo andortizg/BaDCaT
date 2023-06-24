@@ -4,6 +4,13 @@ Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 - badcat_config : Configuration and firmware utility
 - bcunapi : UNAPI driver. Once loaded, you can use BaDCaT wifi modem as standard UNAPI network interface
 
+# How to use:
+- 1. Run badcat_config to setup your AP (option 1).
+- 2. Only for Nextor <2.11: it is necessary to load ramhelpr: ramhelpr i
+- 3. Run nifi unapi driver to load it into RAM
+- 4. Now you can use UNAPI applications!
+** I strongly recommend to use the VERY nice MSX-HUB tool (or HUBG graphical interface) from ducaSP to install programs.
+
 # Limitations
 
 - Passive TCP not yet implemented. FTP based on passive connections is not working.
