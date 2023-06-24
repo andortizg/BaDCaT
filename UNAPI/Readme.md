@@ -8,7 +8,7 @@ Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 
 1. Run badcat_config to setup your AP (option 1).
 2. Only for Nextor <2.11 : it is necessary to load ramhelpr: ramhelpr i
-3. Run nifi unapi driver to load it into RAM
+3. Run bcunapi unapi driver to load it into RAM
 4. Now you can use UNAPI applications!
   
 ***I strongly recommend to use the VERY nice MSX-HUB tool (or HUBG graphical interface) from ducaSP to install programs.***
