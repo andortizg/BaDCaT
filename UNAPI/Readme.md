@@ -37,4 +37,5 @@ Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 
 
 ### If you like to improve the firmware/driver or to add new features, contact me!
+badcatelectronics@gmail.com
 
