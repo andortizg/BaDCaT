@@ -31,7 +31,7 @@ Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 3. Wait for BaDCaT reboot
 
 ## From unapi version:
-1. Use badcat_config tool, option 2 to download the file badcat-2.0.bin from the repository: <badcatrepo.ddns.net>
+1. Use badcat_config tool, option 2 to download the file badcat-2.0.bin from the repository: <http://badcatrepo.ddns.net>
 2. Use option 3 to write the BaDCaT flash with the new firmware.
 
 
