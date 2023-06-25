@@ -24,6 +24,7 @@ Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 # Update procedure
 
 ## From non-unapi version: 
+*** Be sure that you have the SMD/AFE version before updating. Otherwise, you will brick your BaDCaT!. You can check it using the badcat_config tool.***
 
 1. In AT+CONFIG menu, use the the repository <badcatrepo.ddns.net>  -> [REPO] option
 2. In command mode: at&u=2.0
