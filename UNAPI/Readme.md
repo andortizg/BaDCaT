@@ -36,5 +36,5 @@ Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 3. Use option 3 to write the BaDCaT flash with the new firmware.
 
 
-### If you like to improve the firmware or to add new features, contact me!
+### If you like to improve the firmware/driver or to add new features, contact me!
 
