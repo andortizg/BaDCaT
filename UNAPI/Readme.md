@@ -1,4 +1,4 @@
-# UNAPI driver for BaDCaT wifi modem (Only for AFE version and MSX2 computers!)
+# UNAPI driver for BaDCaT wifi modem (Only for AFE/SMD version and MSX2 computers!)
 Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 
 - badcat_config : Configuration and firmware utility
