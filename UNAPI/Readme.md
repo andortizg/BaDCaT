@@ -25,12 +25,12 @@ Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 
 ## From non-unapi version: 
 
-1. In AT+CONFIG menu, use the the repository <badcatrepo.duckdns.org>  -> [REPO] option
+1. In AT+CONFIG menu, use the the repository <badcatrepo.ddns.net>  -> [REPO] option
 2. In command mode: at&u=2.0
 3. Wait for BaDCaT reboot
 
 ## From unapi version:
-1. Use badcat_config tool, option 2 to download the file badcat-2.0.bin from the repository: <badcatrepo.duckdns.org>
+1. Use badcat_config tool, option 2 to download the file badcat-2.0.bin from the repository: <badcatrepo.ddns.net>
 2. Use option 3 to write the BaDCaT flash with the new firmware.
 
 
