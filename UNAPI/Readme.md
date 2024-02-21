@@ -18,7 +18,7 @@ Based on the work of Alexander Nihirash ( @nihirash ) and his Nifi firmware
 
 - Passive TCP not yet implemented. FTP based on passive connections is not working.
 - ICMP not yet implemented. PING command is not working.
-- ROM loading from BaDCaT does not work with the UNAPI firmware
+- Experimental functionality of ROM loading from BaDCaT does not work with the UNAPI firmware
 
 
 # Update procedure
