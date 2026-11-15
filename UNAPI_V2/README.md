@@ -229,20 +229,6 @@ If this feature linked with support of some hardware - I'll need it. I have some
 
 If this feature can be covered via existed hardware - there no need to ship me device.
 
-## Can I make device for you?
-
-Short answer - No. I don't like produce hardware.
-
-I did some only by one reason - I haven't another choice.
-
-## Can you use it in your commercial hardware?
-
-Of cause! With respect to GPLv3.
-
-## Should you pay royalties for it?
-
-As you wish. I'm not against it.
-
 ## Credits
 
 This version (NiFi UNAPI V2) is maintained by **Andrés Ortiz** and builds on the work of:
