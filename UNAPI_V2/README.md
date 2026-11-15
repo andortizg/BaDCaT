@@ -217,17 +217,6 @@ Copyright (C) 2026 Andrés Ortiz.
 Based on the NiFi firmware and UNAPI drivers by Nihirash (Alexander Sharihin), Copyright (C) 2021,
 and on work by Ducasp (Oduvaldo Pavan Junior), Copyright (C) 2020. See [Credits](#credits).
 
-## Do you want support project?
-
-Feel free contribute any code to project, write me "thanks" to email or send some money to my PayPal wallet(also it's my email for contacts): anihirash@gmail.com
-
-## Do you want feature X?
-
-Please, make issue - it will allows track all requests.
-
-If this feature linked with support of some hardware - I'll need it. I have some devices and can cover some list by myself(for example ZXUno, original ZX Spectrum +2A, Spectrum Next, MSX2).
-
-If this feature can be covered via existed hardware - there no need to ship me device.
 
 ## Credits
 
